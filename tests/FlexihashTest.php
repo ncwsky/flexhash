@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Flexihash\Tests;
 
-use Flexihash\Exception;
 use Flexihash\Flexihash;
 use Flexihash\Tests\Hasher\MockHasher;
 
@@ -13,65 +12,65 @@ use Flexihash\Tests\Hasher\MockHasher;
  */
 class FlexihashTest extends \PHPUnit\Framework\TestCase
 {
-    public function testGetAllTargetsEmpty(): void
+    public function testGetAllNodesEmpty(): void
     {
         $hashSpace = new Flexihash();
-        $this->assertEquals($hashSpace->getAllTargets(), []);
+        $this->assertEquals($hashSpace->getAllNodes(), []);
     }
 
-    public function testAddTargetThrowsExceptionOnDuplicateTarget(): void
+    public function testAddNodeThrowsExceptionOnDuplicateNode(): void
     {
         $hashSpace = new Flexihash();
-        $hashSpace->addTarget('t-a');
-        $this->expectException('Flexihash\Exception');
-        $hashSpace->addTarget('t-a');
+        $hashSpace->addNode('t-a');
+        $this->expectException('\Exception');
+        $hashSpace->addNode('t-a');
     }
 
-    public function testAddTargetAndGetAllTargets(): void
+    public function testAddNodeAndGetAllNodes(): void
     {
         $hashSpace = new Flexihash();
         $hashSpace
-            ->addTarget('t-a')
-            ->addTarget('t-b')
-            ->addTarget('t-c')
+            ->addNode('t-a')
+            ->addNode('t-b')
+            ->addNode('t-c')
             ;
 
-        $this->assertEquals($hashSpace->getAllTargets(), ['t-a', 't-b', 't-c']);
+        $this->assertEquals($hashSpace->getAllNodes(), ['t-a', 't-b', 't-c']);
     }
 
-    public function testAddTargetsAndGetAllTargets(): void
+    public function testAddNodesAndGetAllNodes(): void
     {
-        $targets = ['t-a', 't-b', 't-c'];
+        $nodes = ['t-a', 't-b', 't-c'];
 
         $hashSpace = new Flexihash();
-        $hashSpace->addTargets($targets);
-        $this->assertEquals($hashSpace->getAllTargets(), $targets);
+        $hashSpace->addNodes($nodes);
+        $this->assertEquals($hashSpace->getAllNodes(), $nodes);
     }
 
-    public function testRemoveTarget(): void
+    public function testRemoveNode(): void
     {
         $hashSpace = new Flexihash();
         $hashSpace
-            ->addTarget('t-a')
-            ->addTarget('t-b')
-            ->addTarget('t-c')
-            ->removeTarget('t-b')
+            ->addNode('t-a')
+            ->addNode('t-b')
+            ->addNode('t-c')
+            ->removeNode('t-b')
             ;
-        $this->assertEquals($hashSpace->getAllTargets(), ['t-a', 't-c']);
+        $this->assertEquals($hashSpace->getAllNodes(), ['t-a', 't-c']);
     }
 
-    public function testRemoveTargetFailsOnMissingTarget(): void
+    public function testRemoveNodeFailsOnMissingNode(): void
     {
         $hashSpace = new Flexihash();
-        $this->expectException('Flexihash\Exception');
-        $hashSpace->removeTarget('not-there');
+        $this->expectException('\Exception');
+        $hashSpace->removeNode('not-there');
     }
 
     public function testHashSpaceRepeatableLookups(): void
     {
         $hashSpace = new Flexihash();
         foreach (range(1, 10) as $i) {
-            $hashSpace->addTarget("target$i");
+            $hashSpace->addNode("node$i");
         }
 
         $this->assertEquals($hashSpace->lookup('t1'), $hashSpace->lookup('t1'));
@@ -81,39 +80,39 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     public function testHashSpaceLookupListEmpty(): void
     {
         $hashSpace = new Flexihash();
-        $this->assertEmpty($hashSpace->lookupList('t1', 2));
+        $this->assertEmpty($hashSpace->getNode('t1', 2));
     }
 
-    public function testHashSpaceLookupListNoTargets(): void
+    public function testHashSpaceLookupListNoNodes(): void
     {
-        $this->expectException('Flexihash\Exception');
-        $this->expectExceptionMessage('No targets exist');
+        $this->expectException('\Exception');
+        $this->expectExceptionMessage('No nodes exist');
         $hashSpace = new Flexihash();
         $hashSpace->lookup('t1');
     }
 
     public function testHashSpaceLookupListNo(): void
     {
-        $this->expectException('Flexihash\Exception');
+        $this->expectException('\Exception');
         $this->expectExceptionMessage('Invalid count requested');
         $hashSpace = new Flexihash();
-        $hashSpace->lookupList('t1', 0);
+        $hashSpace->getNode('t1', 0);
     }
 
-    public function testHashSpaceLookupsAreValidTargets(): void
+    public function testHashSpaceLookupsAreValidNodes(): void
     {
-        $targets = [];
+        $nodes = [];
         foreach (range(1, 10) as $i) {
-            $targets [] = "target$i";
+            $nodes [] = "node$i";
         }
 
         $hashSpace = new Flexihash();
-        $hashSpace->addTargets($targets);
+        $hashSpace->addNodes($nodes);
 
         foreach (range(1, 10) as $i) {
             $this->assertTrue(
-                in_array($hashSpace->lookup("r$i"), $targets),
-                'target must be in list of targets'
+                in_array($hashSpace->lookup("r$i"), $nodes),
+                'node must be in list of nodes'
             );
         }
     }
@@ -122,7 +121,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     {
         $hashSpace = new Flexihash();
         foreach (range(1, 10) as $i) {
-            $hashSpace->addTarget("target$i");
+            $hashSpace->addNode("node$i");
         }
 
         $results1 = [];
@@ -131,10 +130,10 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
         }
 
         $hashSpace
-            ->addTarget('new-target')
-            ->removeTarget('new-target')
-            ->addTarget('new-target')
-            ->removeTarget('new-target')
+            ->addNode('new-node')
+            ->removeNode('new-node')
+            ->addNode('new-node')
+            ->removeNode('new-node')
             ;
 
         $results2 = [];
@@ -142,8 +141,8 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
             $results2 [] = $hashSpace->lookup("t$i");
         }
 
-        // This is probably optimistic, as adding/removing a target may
-        // clobber existing targets and is not expected to restore them.
+        // This is probably optimistic, as adding/removing a node may
+        // clobber existing nodes and is not expected to restore them.
         $this->assertEquals($results1, $results2);
     }
 
@@ -151,7 +150,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     {
         $hashSpace1 = new Flexihash();
         foreach (range(1, 10) as $i) {
-            $hashSpace1->addTarget("target$i");
+            $hashSpace1->addNode("node$i");
         }
         $results1 = [];
         foreach (range(1, 100) as $i) {
@@ -160,7 +159,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
         $hashSpace2 = new Flexihash();
         foreach (range(1, 10) as $i) {
-            $hashSpace2->addTarget("target$i");
+            $hashSpace2->addNode("node$i");
         }
         $results2 = [];
         foreach (range(1, 100) as $i) {
@@ -170,109 +169,109 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($results1, $results2);
     }
 
-    public function testGetMultipleTargets(): void
+    public function testGetMultipleNodes(): void
     {
         $hashSpace = new Flexihash();
         foreach (range(1, 10) as $i) {
-            $hashSpace->addTarget("target$i");
+            $hashSpace->addNode("node$i");
         }
 
-        $targets = $hashSpace->lookupList('resource', 2);
+        $nodes = $hashSpace->getNode('resource', 2);
 
-        $this->assertIsArray($targets);
-        $this->assertEquals(count($targets), 2);
-        $this->assertNotEquals($targets[0], $targets[1]);
+        $this->assertIsArray($nodes);
+        $this->assertEquals(count($nodes), 2);
+        $this->assertNotEquals($nodes[0], $nodes[1]);
     }
 
-    public function testGetMultipleTargetsWithOnlyOneTarget(): void
+    public function testGetMultipleNodesWithOnlyOneNode(): void
     {
         $hashSpace = new Flexihash();
-        $hashSpace->addTarget('single-target');
+        $hashSpace->addNode('single-node');
 
-        $targets = $hashSpace->lookupList('resource', 2);
+        $nodes = $hashSpace->getNode('resource', 2);
 
-        $this->assertIsArray($targets);
-        $this->assertEquals(count($targets), 1);
-        $this->assertEquals($targets[0], 'single-target');
+        $this->assertIsArray($nodes);
+        $this->assertEquals(count($nodes), 1);
+        $this->assertEquals($nodes[0], 'single-node');
     }
 
-    public function testGetMoreTargetsThanExist(): void
+    public function testGetMoreNodesThanExist(): void
     {
         $hashSpace = new Flexihash();
-        $hashSpace->addTarget('target1');
-        $hashSpace->addTarget('target2');
+        $hashSpace->addNode('node1');
+        $hashSpace->addNode('node2');
 
-        $targets = $hashSpace->lookupList('resource', 4);
+        $nodes = $hashSpace->getNode('resource', 4);
 
-        $this->assertIsArray($targets);
-        $this->assertEquals(count($targets), 2);
-        $this->assertNotEquals($targets[0], $targets[1]);
+        $this->assertIsArray($nodes);
+        $this->assertEquals(count($nodes), 2);
+        $this->assertNotEquals($nodes[0], $nodes[1]);
     }
 
-    public function testGetMultipleTargetsNeedingToLoopToStart(): void
+    public function testGetMultipleNodesNeedingToLoopToStart(): void
     {
         $mockHasher = new MockHasher();
         $hashSpace = new Flexihash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
-        $hashSpace->addTarget('t1');
+        $hashSpace->addNode('t1');
 
         $mockHasher->setHashValue(20);
-        $hashSpace->addTarget('t2');
+        $hashSpace->addNode('t2');
 
         $mockHasher->setHashValue(30);
-        $hashSpace->addTarget('t3');
+        $hashSpace->addNode('t3');
 
         $mockHasher->setHashValue(40);
-        $hashSpace->addTarget('t4');
+        $hashSpace->addNode('t4');
 
         $mockHasher->setHashValue(50);
-        $hashSpace->addTarget('t5');
+        $hashSpace->addNode('t5');
 
         $mockHasher->setHashValue(35);
-        $targets = $hashSpace->lookupList('resource', 4);
+        $nodes = $hashSpace->getNode('resource', 4);
 
-        $this->assertEquals($targets, ['t4', 't5', 't1', 't2']);
+        $this->assertEquals($nodes, ['t4', 't5', 't1', 't2']);
     }
 
-    public function testGetMultipleTargetsWithoutGettingAnyBeforeLoopToStart(): void
+    public function testGetMultipleNodesWithoutGettingAnyBeforeLoopToStart(): void
     {
         $mockHasher = new MockHasher();
         $hashSpace = new Flexihash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
-        $hashSpace->addTarget('t1');
+        $hashSpace->addNode('t1');
 
         $mockHasher->setHashValue(20);
-        $hashSpace->addTarget('t2');
+        $hashSpace->addNode('t2');
 
         $mockHasher->setHashValue(30);
-        $hashSpace->addTarget('t3');
+        $hashSpace->addNode('t3');
 
         $mockHasher->setHashValue(100);
-        $targets = $hashSpace->lookupList('resource', 2);
+        $nodes = $hashSpace->getNode('resource', 2);
 
-        $this->assertEquals($targets, ['t1', 't2']);
+        $this->assertEquals($nodes, ['t1', 't2']);
     }
 
-    public function testGetMultipleTargetsWithoutNeedingToLoopToStart(): void
+    public function testGetMultipleNodesWithoutNeedingToLoopToStart(): void
     {
         $mockHasher = new MockHasher();
         $hashSpace = new Flexihash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
-        $hashSpace->addTarget('t1');
+        $hashSpace->addNode('t1');
 
         $mockHasher->setHashValue(20);
-        $hashSpace->addTarget('t2');
+        $hashSpace->addNode('t2');
 
         $mockHasher->setHashValue(30);
-        $hashSpace->addTarget('t3');
+        $hashSpace->addNode('t3');
 
         $mockHasher->setHashValue(15);
-        $targets = $hashSpace->lookupList('resource', 2);
+        $nodes = $hashSpace->getNode('resource', 2);
 
-        $this->assertEquals($targets, ['t2', 't3']);
+        $this->assertEquals($nodes, ['t2', 't3']);
     }
 
     public function testFallbackPrecedenceWhenServerRemoved(): void
@@ -281,35 +280,35 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
         $hashSpace = new Flexihash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
-        $hashSpace->addTarget('t1');
+        $hashSpace->addNode('t1');
 
         $mockHasher->setHashValue(20);
-        $hashSpace->addTarget('t2');
+        $hashSpace->addNode('t2');
 
         $mockHasher->setHashValue(30);
-        $hashSpace->addTarget('t3');
+        $hashSpace->addNode('t3');
 
         $mockHasher->setHashValue(15);
 
         $this->assertEquals($hashSpace->lookup('resource'), 't2');
         $this->assertEquals(
-            $hashSpace->lookupList('resource', 3),
+            $hashSpace->getNode('resource', 3),
             ['t2', 't3', 't1']
         );
 
-        $hashSpace->removeTarget('t2');
+        $hashSpace->removeNode('t2');
 
         $this->assertEquals($hashSpace->lookup('resource'), 't3');
         $this->assertEquals(
-            $hashSpace->lookupList('resource', 3),
+            $hashSpace->getNode('resource', 3),
             ['t3', 't1']
         );
 
-        $hashSpace->removeTarget('t3');
+        $hashSpace->removeNode('t3');
 
         $this->assertEquals($hashSpace->lookup('resource'), 't1');
         $this->assertEquals(
-            $hashSpace->lookupList('resource', 3),
+            $hashSpace->getNode('resource', 3),
             ['t1']
         );
     }
@@ -323,12 +322,12 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     {
         $mockHasher = new MockHasher();
         $hashSpace = new Flexihash($mockHasher, 1);
-        $hashSpace->addTarget('t1');
-        $hashSpace->addTarget('t2');
+        $hashSpace->addNode('t1');
+        $hashSpace->addNode('t2');
 
         $this->assertSame(
             $hashSpace->__toString(),
-            'Flexihash\Flexihash{targets:[t1,t2]}'
+            'Flexihash\Flexihash{nodes:[t1,t2]}'
         );
     }
 }

@@ -12,7 +12,11 @@ namespace Flexihash\Hasher;
  */
 class Crc32Hasher implements HasherInterface
 {
-    public function hash($string): int
+    /**
+     * @param $string
+     * @return int
+     */
+    public function hash($string)
     {
         return crc32($string);
     }

@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace Flexihash\Tests;
 
 use Flexihash\Flexihash;
-use Flexihash\Hasher\Crc32Hasher;
-use Flexihash\Hasher\Md5Hasher;
 
 /**
  * Benchmarks, not really tests.
@@ -24,7 +22,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
         echo $message."\n";
     }
 
-    public function testAddTargetWithNonConsistentHash(): void
+    public function testAddNodeWithNonConsistentHash(): void
     {
         $results1 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -49,7 +47,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after adding a target to the existing {$this->targets}");
     }
 
-    public function testRemoveTargetWithNonConsistentHash(): void
+    public function testRemoveNodeWithNonConsistentHash(): void
     {
         $results1 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -74,13 +72,11 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after removing 1 of {$this->targets} targets");
     }
 
-    public function testHopeAddingTargetDoesNotChangeMuchWithCrc32Hasher(): void
+    public function testHopeAddingNodeDoesNotChangeMuchWithCrc32Hasher(): void
     {
-        $hashSpace = new Flexihash(
-            new Crc32Hasher()
-        );
+        $hashSpace = new Flexihash();
         foreach (range(1, $this->targets) as $i) {
-            $hashSpace->addTarget("target$i");
+            $hashSpace->addNode("target$i");
         }
 
         $results1 = [];
@@ -88,7 +84,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             $results1[$i] = $hashSpace->lookup("t$i");
         }
 
-        $hashSpace->addTarget('target-new');
+        $hashSpace->addNode('target-new');
 
         $results2 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -108,13 +104,11 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after adding a target to the existing {$this->targets}");
     }
 
-    public function testHopeRemovingTargetDoesNotChangeMuchWithCrc32Hasher(): void
+    public function testHopeRemovingNodeDoesNotChangeMuchWithCrc32Hasher(): void
     {
-        $hashSpace = new Flexihash(
-            new Crc32Hasher()
-        );
+        $hashSpace = new Flexihash();
         foreach (range(1, $this->targets) as $i) {
-            $hashSpace->addTarget("target$i");
+            $hashSpace->addNode("target$i");
         }
 
         $results1 = [];
@@ -122,7 +116,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             $results1[$i] = $hashSpace->lookup("t$i");
         }
 
-        $hashSpace->removeTarget('target1');
+        $hashSpace->removeNode('target1');
 
         $results2 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -144,12 +138,10 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
     public function testHashDistributionWithCrc32Hasher(): void
     {
-        $hashSpace = new Flexihash(
-            new Crc32Hasher()
-        );
+        $hashSpace = new Flexihash();
 
         foreach (range(1, $this->targets) as $i) {
-            $hashSpace->addTarget("target$i");
+            $hashSpace->addNode("target$i");
         }
 
         $results = [];
@@ -158,7 +150,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
         }
 
         $distribution = [];
-        foreach ($hashSpace->getAllTargets() as $target) {
+        foreach ($hashSpace->getAllNodes() as $target) {
             $distribution[$target] = count(array_keys($results, $target));
         }
 
@@ -207,8 +199,8 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param array $array list of numeric values
-     * @return numeric
+     * @param array $values list of numeric values
+     * @return int
      */
     private function median($values):int
     {

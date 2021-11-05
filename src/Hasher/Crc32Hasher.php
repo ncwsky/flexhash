@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Hasher;
+namespace FlexHash\Hasher;
 
 /**
  * Uses CRC32 to hash a value into a signed 32bit int address space.

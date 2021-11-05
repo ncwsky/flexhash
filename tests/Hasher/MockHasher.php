@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Tests\Hasher;
+namespace FlexHash\Tests\Hasher;
 
-use Flexihash\Hasher\HasherInterface;
+use FlexHash\Hasher\HasherInterface;
 
 /**
  * @author Paul Annesley

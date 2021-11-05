@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Hasher;
+namespace FlexHash\Hasher;
 
 /**
  * Hashes given values into a sortable fixed size address space.

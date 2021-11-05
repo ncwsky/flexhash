@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Tests;
+namespace FlexHash\Tests;
 
-use Flexihash\Flexihash;
+use FlexHash\FlexHash;
 
 /**
  * Benchmarks, not really tests.
@@ -74,7 +74,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
     public function testHopeAddingNodeDoesNotChangeMuchWithCrc32Hasher(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         foreach (range(1, $this->targets) as $i) {
             $hashSpace->addNode("target$i");
         }
@@ -106,7 +106,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
     public function testHopeRemovingNodeDoesNotChangeMuchWithCrc32Hasher(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         foreach (range(1, $this->targets) as $i) {
             $hashSpace->addNode("target$i");
         }
@@ -138,7 +138,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
     public function testHashDistributionWithCrc32Hasher(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
 
         foreach (range(1, $this->targets) as $i) {
             $hashSpace->addNode("target$i");

@@ -6,15 +6,15 @@ Flexihash is a small PHP library which implements [consistent hashing](http://en
 
 ## Installation
 
-[Composer](https://getcomposer.org/) is the recommended installation technique. You can find flexihash on [Packagist](https://packagist.org/packages/flexihash/flexihash) so installation is as easy as
+[Composer](https://getcomposer.org/) is the recommended installation technique. You can find flexihash on [Packagist](https://packagist.org/packages/myphps/flexhash) so installation is as easy as
 ```
-composer require flexihash/flexihash
+composer require myphps/flexihash
 ```
 or in your `composer.json`
 ```json
 {
     "require": {
-        "flexihash/flexihash": "^3.0.0"
+        "myphps/flexhash": "^1.0"
     }
 }
 ```
@@ -22,10 +22,10 @@ or in your `composer.json`
 ## Usage
 
 ```php
-$hash = new Flexihash();
+$hash = new FlexHash();
 
 // bulk add
-$hash->addTargets(['cache-1', 'cache-2', 'cache-3']);
+$hash->addNodes(['cache-1', 'cache-2', 'cache-3']);
 
 // simple lookup
 $hash->lookup('object-a'); // "cache-1"
@@ -33,14 +33,14 @@ $hash->lookup('object-b'); // "cache-2"
 
 // add and remove
 $hash
-  ->addTarget('cache-4')
-  ->removeTarget('cache-1');
+  ->addNode('cache-4')
+  ->removeNode('cache-1');
 
 // lookup with next-best fallback (for redundant writes)
-$hash->lookupList('object', 2); // ["cache-2", "cache-4"]
+$hash->getNodes('object', 2); // ["cache-2", "cache-4"]
 
 // remove cache-2, expect object to hash to cache-4
-$hash->removeTarget('cache-2');
+$hash->removeNode('cache-2');
 $hash->lookup('object'); // "cache-4"
 ```
 

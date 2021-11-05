@@ -1,8 +1,8 @@
 {
-    "name": "flexihash/flexihash",
+    "name": "myphps/flexhash",
     "type": "library",
     "description": "Flexihash is a small PHP library which implements consistent hashing",
-    "homepage": "https://github.com/pda/flexihash",
+    "homepage": "https://github.com/ncwsky/flexhash",
     "license": "MIT",
     "authors": [
         {
@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2.0"
+        "php": ">=7.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8",
@@ -31,12 +31,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Flexihash\\": "src/"
+            "FlexHash\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Flexihash\\Tests\\": "tests/"
+            "FlexHash\\Tests\\": "tests/"
         }
     }
 }

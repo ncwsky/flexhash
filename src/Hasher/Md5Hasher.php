@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Hasher;
+namespace FlexHash\Hasher;
 
 /**
  * Uses MD5 to hash a value into a 32bit int.

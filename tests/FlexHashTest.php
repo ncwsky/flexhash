@@ -1,26 +1,26 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Tests;
+namespace FlexHash\Tests;
 
-use Flexihash\Flexihash;
-use Flexihash\Tests\Hasher\MockHasher;
+use FlexHash\FlexHash;
+use FlexHash\Tests\Hasher\MockHasher;
 
 /**
  * @author Paul Annesley
  * @license http://www.opensource.org/licenses/mit-license.php
  */
-class FlexihashTest extends \PHPUnit\Framework\TestCase
+class FlexHashTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetAllNodesEmpty(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $this->assertEquals($hashSpace->getAllNodes(), []);
     }
 
     public function testAddNodeThrowsExceptionOnDuplicateNode(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->addNode('t-a');
         $this->expectException('\Exception');
         $hashSpace->addNode('t-a');
@@ -28,7 +28,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testAddNodeAndGetAllNodes(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace
             ->addNode('t-a')
             ->addNode('t-b')
@@ -42,14 +42,14 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     {
         $nodes = ['t-a', 't-b', 't-c'];
 
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->addNodes($nodes);
         $this->assertEquals($hashSpace->getAllNodes(), $nodes);
     }
 
     public function testRemoveNode(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace
             ->addNode('t-a')
             ->addNode('t-b')
@@ -61,14 +61,14 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testRemoveNodeFailsOnMissingNode(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $this->expectException('\Exception');
         $hashSpace->removeNode('not-there');
     }
 
     public function testHashSpaceRepeatableLookups(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         foreach (range(1, 10) as $i) {
             $hashSpace->addNode("node$i");
         }
@@ -79,7 +79,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testHashSpaceLookupListEmpty(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $this->assertEmpty($hashSpace->getNode('t1', 2));
     }
 
@@ -87,7 +87,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException('\Exception');
         $this->expectExceptionMessage('No nodes exist');
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->lookup('t1');
     }
 
@@ -95,7 +95,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     {
         $this->expectException('\Exception');
         $this->expectExceptionMessage('Invalid count requested');
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->getNode('t1', 0);
     }
 
@@ -106,7 +106,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
             $nodes [] = "node$i";
         }
 
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->addNodes($nodes);
 
         foreach (range(1, 10) as $i) {
@@ -119,7 +119,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testHashSpaceConsistentLookupsAfterAddingAndRemoving(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         foreach (range(1, 10) as $i) {
             $hashSpace->addNode("node$i");
         }
@@ -148,7 +148,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testHashSpaceConsistentLookupsWithNewInstance(): void
     {
-        $hashSpace1 = new Flexihash();
+        $hashSpace1 = new FlexHash();
         foreach (range(1, 10) as $i) {
             $hashSpace1->addNode("node$i");
         }
@@ -157,7 +157,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
             $results1 [] = $hashSpace1->lookup("t$i");
         }
 
-        $hashSpace2 = new Flexihash();
+        $hashSpace2 = new FlexHash();
         foreach (range(1, 10) as $i) {
             $hashSpace2->addNode("node$i");
         }
@@ -171,7 +171,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testGetMultipleNodes(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         foreach (range(1, 10) as $i) {
             $hashSpace->addNode("node$i");
         }
@@ -185,7 +185,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testGetMultipleNodesWithOnlyOneNode(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->addNode('single-node');
 
         $nodes = $hashSpace->getNode('resource', 2);
@@ -197,7 +197,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
 
     public function testGetMoreNodesThanExist(): void
     {
-        $hashSpace = new Flexihash();
+        $hashSpace = new FlexHash();
         $hashSpace->addNode('node1');
         $hashSpace->addNode('node2');
 
@@ -211,7 +211,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     public function testGetMultipleNodesNeedingToLoopToStart(): void
     {
         $mockHasher = new MockHasher();
-        $hashSpace = new Flexihash($mockHasher, 1);
+        $hashSpace = new FlexHash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
         $hashSpace->addNode('t1');
@@ -237,7 +237,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     public function testGetMultipleNodesWithoutGettingAnyBeforeLoopToStart(): void
     {
         $mockHasher = new MockHasher();
-        $hashSpace = new Flexihash($mockHasher, 1);
+        $hashSpace = new FlexHash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
         $hashSpace->addNode('t1');
@@ -257,7 +257,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     public function testGetMultipleNodesWithoutNeedingToLoopToStart(): void
     {
         $mockHasher = new MockHasher();
-        $hashSpace = new Flexihash($mockHasher, 1);
+        $hashSpace = new FlexHash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
         $hashSpace->addNode('t1');
@@ -277,7 +277,7 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     public function testFallbackPrecedenceWhenServerRemoved(): void
     {
         $mockHasher = new MockHasher();
-        $hashSpace = new Flexihash($mockHasher, 1);
+        $hashSpace = new FlexHash($mockHasher, 1);
 
         $mockHasher->setHashValue(10);
         $hashSpace->addNode('t1');
@@ -321,13 +321,13 @@ class FlexihashTest extends \PHPUnit\Framework\TestCase
     public function testHashSpaceToString(): void
     {
         $mockHasher = new MockHasher();
-        $hashSpace = new Flexihash($mockHasher, 1);
+        $hashSpace = new FlexHash($mockHasher, 1);
         $hashSpace->addNode('t1');
         $hashSpace->addNode('t2');
 
         $this->assertSame(
             $hashSpace->__toString(),
-            'Flexihash\Flexihash{nodes:[t1,t2]}'
+            'FlexHash\FlexHash{nodes:[t1,t2]}'
         );
     }
 }

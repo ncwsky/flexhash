@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Flexihash\Tests\Hasher;
+namespace FlexHash\Tests\Hasher;
 
-use Flexihash\Hasher\Crc32Hasher;
-use Flexihash\Hasher\Md5Hasher;
+use FlexHash\Hasher\Crc32Hasher;
+use FlexHash\Hasher\Md5Hasher;
 
 /**
  * @author Paul Annesley

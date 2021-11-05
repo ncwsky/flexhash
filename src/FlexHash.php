@@ -88,7 +88,7 @@ class FlexHash
     public function addNode($node, $weight = 1)
     {
         if (isset($this->nodeToPoint[$node])) {
-            throw new \Exception("Target '$node' already exists.");
+            throw new \Exception("Node '$node' already exists.");
         }
 
         $this->nodeToPoint[$node] = [];
@@ -128,10 +128,10 @@ class FlexHash
      * @return $this
      * @throws \Exception
      */
-    public function removeTarget($node)
+    public function removeNode($node)
     {
         if (!isset($this->nodeToPoint[$node])) {
-            throw new \Exception("Target '$node' does not exist.");
+            throw new \Exception("Node '$node' does not exist.");
         }
 
         foreach ($this->nodeToPoint[$node] as $point) {
@@ -150,7 +150,7 @@ class FlexHash
      * A list of all potential nodes.
      * @return array
      */
-    public function getAllTargets(): array
+    public function getAllNodes(): array
     {
         return array_keys($this->nodeToPoint);
     }
@@ -247,7 +247,7 @@ class FlexHash
         return sprintf(
             '%s{nodes:[%s]}',
             get_class($this),
-            implode(',', $this->getAllTargets())
+            implode(',', $this->getAllNodes())
         );
     }
 

@@ -12,13 +12,13 @@ use FlexHash\Tests\Hasher\MockHasher;
  */
 class FlexHashTest extends \PHPUnit\Framework\TestCase
 {
-    public function testGetAllNodesEmpty(): void
+    public function testGetAllNodesEmpty()
     {
         $hashSpace = new FlexHash();
         $this->assertEquals($hashSpace->getAllNodes(), []);
     }
 
-    public function testAddNodeThrowsExceptionOnDuplicateNode(): void
+    public function testAddNodeThrowsExceptionOnDuplicateNode()
     {
         $hashSpace = new FlexHash();
         $hashSpace->addNode('t-a');
@@ -26,7 +26,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $hashSpace->addNode('t-a');
     }
 
-    public function testAddNodeAndGetAllNodes(): void
+    public function testAddNodeAndGetAllNodes()
     {
         $hashSpace = new FlexHash();
         $hashSpace
@@ -38,7 +38,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($hashSpace->getAllNodes(), ['t-a', 't-b', 't-c']);
     }
 
-    public function testAddNodesAndGetAllNodes(): void
+    public function testAddNodesAndGetAllNodes()
     {
         $nodes = ['t-a', 't-b', 't-c'];
 
@@ -47,7 +47,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($hashSpace->getAllNodes(), $nodes);
     }
 
-    public function testRemoveNode(): void
+    public function testRemoveNode()
     {
         $hashSpace = new FlexHash();
         $hashSpace
@@ -59,14 +59,14 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($hashSpace->getAllNodes(), ['t-a', 't-c']);
     }
 
-    public function testRemoveNodeFailsOnMissingNode(): void
+    public function testRemoveNodeFailsOnMissingNode()
     {
         $hashSpace = new FlexHash();
         $this->expectException('\Exception');
         $hashSpace->removeNode('not-there');
     }
 
-    public function testHashSpaceRepeatableLookups(): void
+    public function testHashSpaceRepeatableLookups()
     {
         $hashSpace = new FlexHash();
         foreach (range(1, 10) as $i) {
@@ -77,13 +77,13 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($hashSpace->lookup('t2'), $hashSpace->lookup('t2'));
     }
 
-    public function testHashSpaceLookupListEmpty(): void
+    public function testHashSpaceLookupListEmpty()
     {
         $hashSpace = new FlexHash();
         $this->assertEmpty($hashSpace->getNode('t1', 2));
     }
 
-    public function testHashSpaceLookupListNoNodes(): void
+    public function testHashSpaceLookupListNoNodes()
     {
         $this->expectException('\Exception');
         $this->expectExceptionMessage('No nodes exist');
@@ -91,7 +91,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $hashSpace->lookup('t1');
     }
 
-    public function testHashSpaceLookupListNo(): void
+    public function testHashSpaceLookupListNo()
     {
         $this->expectException('\Exception');
         $this->expectExceptionMessage('Invalid count requested');
@@ -99,7 +99,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $hashSpace->getNode('t1', 0);
     }
 
-    public function testHashSpaceLookupsAreValidNodes(): void
+    public function testHashSpaceLookupsAreValidNodes()
     {
         $nodes = [];
         foreach (range(1, 10) as $i) {
@@ -117,7 +117,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testHashSpaceConsistentLookupsAfterAddingAndRemoving(): void
+    public function testHashSpaceConsistentLookupsAfterAddingAndRemoving()
     {
         $hashSpace = new FlexHash();
         foreach (range(1, 10) as $i) {
@@ -146,7 +146,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($results1, $results2);
     }
 
-    public function testHashSpaceConsistentLookupsWithNewInstance(): void
+    public function testHashSpaceConsistentLookupsWithNewInstance()
     {
         $hashSpace1 = new FlexHash();
         foreach (range(1, 10) as $i) {
@@ -169,7 +169,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($results1, $results2);
     }
 
-    public function testGetMultipleNodes(): void
+    public function testGetMultipleNodes()
     {
         $hashSpace = new FlexHash();
         foreach (range(1, 10) as $i) {
@@ -183,7 +183,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertNotEquals($nodes[0], $nodes[1]);
     }
 
-    public function testGetMultipleNodesWithOnlyOneNode(): void
+    public function testGetMultipleNodesWithOnlyOneNode()
     {
         $hashSpace = new FlexHash();
         $hashSpace->addNode('single-node');
@@ -195,7 +195,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($nodes[0], 'single-node');
     }
 
-    public function testGetMoreNodesThanExist(): void
+    public function testGetMoreNodesThanExist()
     {
         $hashSpace = new FlexHash();
         $hashSpace->addNode('node1');
@@ -208,7 +208,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertNotEquals($nodes[0], $nodes[1]);
     }
 
-    public function testGetMultipleNodesNeedingToLoopToStart(): void
+    public function testGetMultipleNodesNeedingToLoopToStart()
     {
         $mockHasher = new MockHasher();
         $hashSpace = new FlexHash($mockHasher, 1);
@@ -234,7 +234,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($nodes, ['t4', 't5', 't1', 't2']);
     }
 
-    public function testGetMultipleNodesWithoutGettingAnyBeforeLoopToStart(): void
+    public function testGetMultipleNodesWithoutGettingAnyBeforeLoopToStart()
     {
         $mockHasher = new MockHasher();
         $hashSpace = new FlexHash($mockHasher, 1);
@@ -254,7 +254,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($nodes, ['t1', 't2']);
     }
 
-    public function testGetMultipleNodesWithoutNeedingToLoopToStart(): void
+    public function testGetMultipleNodesWithoutNeedingToLoopToStart()
     {
         $mockHasher = new MockHasher();
         $hashSpace = new FlexHash($mockHasher, 1);
@@ -274,7 +274,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($nodes, ['t2', 't3']);
     }
 
-    public function testFallbackPrecedenceWhenServerRemoved(): void
+    public function testFallbackPrecedenceWhenServerRemoved()
     {
         $mockHasher = new MockHasher();
         $hashSpace = new FlexHash($mockHasher, 1);
@@ -318,7 +318,7 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
      *
      * @author Dom Morgan <dom@d3r.com>
      */
-    public function testHashSpaceToString(): void
+    public function testHashSpaceToString()
     {
         $mockHasher = new MockHasher();
         $hashSpace = new FlexHash($mockHasher, 1);

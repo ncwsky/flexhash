@@ -12,7 +12,7 @@ use FlexHash\Hasher\Md5Hasher;
  */
 class HasherTest extends \PHPUnit\Framework\TestCase
 {
-    public function testCrc32Hash(): void
+    public function testCrc32Hash()
     {
         $hasher = new Crc32Hasher();
         $result1 = $hasher->hash('test');
@@ -23,7 +23,7 @@ class HasherTest extends \PHPUnit\Framework\TestCase
         $this->assertNotEquals($result1, $result3); // fragile but worthwhile
     }
 
-    public function testMd5Hash(): void
+    public function testMd5Hash()
     {
         $hasher = new Md5Hasher();
         $result1 = $hasher->hash('test');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace FlexHash\Tests;
 
 use FlexHash\FlexHash;
+use FlexHash\Hasher\Crc32Hasher;
+use FlexHash\Hasher\Md5Hasher;
 
 /**
  * Benchmarks, not really tests.
@@ -17,12 +19,15 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
     private $targets = 10;
     private $lookups = 1000;
 
-    public function dump($message): void
+    /**
+     * @param $message
+     */
+    public function dump($message)
     {
         echo $message."\n";
     }
 
-    public function testAddNodeWithNonConsistentHash(): void
+    public function testAddNodeWithNonConsistentHash()
     {
         $results1 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -47,7 +52,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after adding a target to the existing {$this->targets}");
     }
 
-    public function testRemoveNodeWithNonConsistentHash(): void
+    public function testRemoveNodeWithNonConsistentHash()
     {
         $results1 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -72,7 +77,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after removing 1 of {$this->targets} targets");
     }
 
-    public function testHopeAddingNodeDoesNotChangeMuchWithCrc32Hasher(): void
+    public function testHopeAddingNodeDoesNotChangeMuchWithCrc32Hasher()
     {
         $hashSpace = new FlexHash();
         foreach (range(1, $this->targets) as $i) {
@@ -104,7 +109,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after adding a target to the existing {$this->targets}");
     }
 
-    public function testHopeRemovingNodeDoesNotChangeMuchWithCrc32Hasher(): void
+    public function testHopeRemovingNodeDoesNotChangeMuchWithCrc32Hasher()
     {
         $hashSpace = new FlexHash();
         foreach (range(1, $this->targets) as $i) {
@@ -136,7 +141,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             "after removing 1 of {$this->targets} targets");
     }
 
-    public function testHashDistributionWithCrc32Hasher(): void
+    public function testHashDistributionWithCrc32Hasher()
     {
         $hashSpace = new FlexHash();
 
@@ -164,7 +169,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
         ));
     }
 
-    public function testHasherSpeed(): void
+    public function testHasherSpeed()
     {
         $hashCount = 100000;
 

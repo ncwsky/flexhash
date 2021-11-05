@@ -10,7 +10,7 @@
          stopOnFailure="false">
 
     <testsuites>
-        <testsuite name="Flexihash Test Suite">
+        <testsuite name="FlexHash Test Suite">
             <directory>tests</directory>
             <exclude>tests/BenchmarkTest.php</exclude>
         </testsuite>

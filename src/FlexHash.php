@@ -37,13 +37,13 @@ class FlexHash
      * Internal map of points (hash outputs) to nodes.
      * @var array { point => node, ... }
      */
-    private $pointToNode = [];
+    public $pointToNode = [];
 
     /**
      * Internal map of nodes to lists of points that node is hashed to.
      * @var array { node => [ point, point, ... ], ... }
      */
-    private $nodeToPoint = [];
+    public $nodeToPoint = [];
 
     /**
      * Whether the internal map of points to nodes is already sorted.
@@ -163,7 +163,7 @@ class FlexHash
      */
     public function lookup($resource): string
     {
-        $nodes = $this->getNodes($resource, 1);
+        $nodes = $this->getNodes($resource);
         if (empty($nodes)) {
             throw new \Exception('No nodes exist');
         }
@@ -173,16 +173,16 @@ class FlexHash
 
     /**
      * Get a list of nodes for the resource, in order of precedence.
-     * Up to $requestedCount nodes are returned, less if there are fewer in total.
+     * Up to $getCount nodes are returned, less if there are fewer in total.
      *
      * @param string $resource
-     * @param int $requestedCount The length of the list to return
+     * @param int $getCount The length of the list to return
      * @return array List of nodes
      * @throws \Exception when count is invalid
      */
-    public function getNodes($resource, $requestedCount=1): array
+    public function getNodes($resource, $getCount=1): array
     {
-        if (!$requestedCount) {
+        if (!$getCount || $getCount<0) {
             throw new \Exception('Invalid count requested');
         }
 
@@ -193,11 +193,11 @@ class FlexHash
 
         // optimize single node
         if ($this->nodeCount == 1) {
-            return array_unique(array_values($this->pointToNode));
+            return [current($this->pointToNode)];
         }
 
         // hash resource to a point
-        $resourcePosition = $this->hasher->hash($resource);
+        $resourcePoint = $this->hasher->hash($resource);
 
         $results = [];
 
@@ -212,9 +212,9 @@ class FlexHash
         while ($high >= $low || $notfound = true) {
             $probe = (int)floor(($high + $low) / 2);
 
-            if ($notfound === false && $points[$probe] <= $resourcePosition) {
+            if ($notfound === false && $points[$probe] <= $resourcePoint) {
                 $low = $probe + 1;
-            } elseif ($probe === 0 || $resourcePosition > $points[$probe - 1] || $notfound === true) {
+            } elseif ($probe === 0 || $resourcePoint > $points[$probe - 1] || $notfound === true) {
                 if ($notfound) {
                     // if not found is true, it means binary search failed to find any point greater
                     // than ressource point, in this case, the last point is the bigest lower
@@ -224,8 +224,8 @@ class FlexHash
 
                 $results[] = $this->pointToNode[$points[$probe]];
 
-                if ($requestedCount > 1) {
-                    for ($i = $requestedCount - 1; $i > 0; --$i) {
+                if ($getCount > 1) {
+                    for ($i = $getCount - 1; $i > 0; --$i) {
                         if (++$probe > $this->pointCount - 1) {
                             $probe = 0; // cycle
                         }
@@ -245,9 +245,13 @@ class FlexHash
     public function __toString(): string
     {
         return sprintf(
-            '%s{nodes:[%s]}',
+            '%s{nodes:[%s]}, nodeCount:%d, pointCount:%d, nodeToPoint:%s, pointToNode:%s, sortedPoints:%s',
             get_class($this),
-            implode(',', $this->getAllNodes())
+            implode(',', $this->getAllNodes()),
+            $this->nodeCount,
+            $this->pointCount,
+            json_encode($this->nodeToPoint),
+            json_encode($this->pointToNode)
         );
     }
 

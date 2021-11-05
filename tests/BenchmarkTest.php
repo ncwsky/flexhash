@@ -16,7 +16,7 @@ use FlexHash\Hasher\Md5Hasher;
  */
 class BenchmarkTest extends \PHPUnit\Framework\TestCase
 {
-    private $targets = 10;
+    private $nodes = 10;
     private $lookups = 1000;
 
     /**
@@ -24,9 +24,12 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
      */
     public function dump($message)
     {
-        echo $message."\n";
+        echo $message . "\n";
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testAddNodeWithNonConsistentHash()
     {
         $results1 = [];
@@ -48,10 +51,13 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
         $percent = round($differences / $this->lookups * 100);
 
-        $this->dump("NonConsistentHash: {$percent}% of lookups changed ".
-            "after adding a target to the existing {$this->targets}");
+        $this->dump("NonConsistentHash: {$percent}% of lookups changed " .
+            "after adding a node to the existing {$this->nodes}");
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testRemoveNodeWithNonConsistentHash()
     {
         $results1 = [];
@@ -73,15 +79,18 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
         $percent = round($differences / $this->lookups * 100);
 
-        $this->dump("NonConsistentHash: {$percent}% of lookups changed ".
-            "after removing 1 of {$this->targets} targets");
+        $this->dump("NonConsistentHash: {$percent}% of lookups changed " .
+            "after removing 1 of {$this->nodes} nodes");
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testHopeAddingNodeDoesNotChangeMuchWithCrc32Hasher()
     {
         $hashSpace = new FlexHash();
-        foreach (range(1, $this->targets) as $i) {
-            $hashSpace->addNode("target$i");
+        foreach (range(1, $this->nodes) as $i) {
+            $hashSpace->addNode("node$i");
         }
 
         $results1 = [];
@@ -89,7 +98,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             $results1[$i] = $hashSpace->lookup("t$i");
         }
 
-        $hashSpace->addNode('target-new');
+        $hashSpace->addNode('node-new');
 
         $results2 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -105,15 +114,18 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
         $percent = round($differences / $this->lookups * 100);
 
-        $this->dump("ConsistentHash: {$percent}% of lookups changed ".
-            "after adding a target to the existing {$this->targets}");
+        $this->dump("ConsistentHash: {$percent}% of lookups changed " .
+            "after adding a node to the existing {$this->nodes}");
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testHopeRemovingNodeDoesNotChangeMuchWithCrc32Hasher()
     {
         $hashSpace = new FlexHash();
-        foreach (range(1, $this->targets) as $i) {
-            $hashSpace->addNode("target$i");
+        foreach (range(1, $this->nodes) as $i) {
+            $hashSpace->addNode("node$i");
         }
 
         $results1 = [];
@@ -121,7 +133,7 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
             $results1[$i] = $hashSpace->lookup("t$i");
         }
 
-        $hashSpace->removeNode('target1');
+        $hashSpace->removeNode('node1');
 
         $results2 = [];
         foreach (range(1, $this->lookups) as $i) {
@@ -137,16 +149,19 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
         $percent = round($differences / $this->lookups * 100);
 
-        $this->dump("ConsistentHash: {$percent}% of lookups changed ".
-            "after removing 1 of {$this->targets} targets");
+        $this->dump("ConsistentHash: {$percent}% of lookups changed " .
+            "after removing 1 of {$this->nodes} nodes");
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testHashDistributionWithCrc32Hasher()
     {
         $hashSpace = new FlexHash();
 
-        foreach (range(1, $this->targets) as $i) {
-            $hashSpace->addNode("target$i");
+        foreach (range(1, $this->nodes) as $i) {
+            $hashSpace->addNode("node$i");
         }
 
         $results = [];
@@ -155,13 +170,13 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
         }
 
         $distribution = [];
-        foreach ($hashSpace->getAllNodes() as $target) {
-            $distribution[$target] = count(array_keys($results, $target));
+        foreach ($hashSpace->getAllNodes() as $node) {
+            $distribution[$node] = count(array_keys($results, $node));
         }
 
         $this->dump(sprintf(
-            'Distribution of %d lookups per target (min/max/median/avg): %d/%d/%d/%d',
-            $this->lookups / $this->targets,
+            'Distribution of %d lookups per node (min/max/median/avg): %d/%d/%d/%d',
+            $this->lookups / $this->nodes,
             min($distribution),
             max($distribution),
             round($this->median($distribution)),
@@ -169,6 +184,9 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
         ));
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testHasherSpeed()
     {
         $hashCount = 100000;
@@ -198,16 +216,16 @@ class BenchmarkTest extends \PHPUnit\Framework\TestCase
 
     // ----------------------------------------
 
-    private function basicHash($value, $targets):int
+    private function basicHash($value, $nodes)
     {
-        return abs(crc32($value) % $targets);
+        return abs(crc32($value) % $nodes);
     }
 
     /**
      * @param array $values list of numeric values
      * @return int
      */
-    private function median($values):int
+    private function median($values)
     {
         $values = array_values($values);
         sort($values);

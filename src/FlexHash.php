@@ -95,7 +95,7 @@ class FlexHash
 
         // hash the node into multiple points
         for ($i = 0; $i < round($this->replicas * $weight); ++$i) {
-            $point = $this->hasher->hash($node . $i);
+            $point = $this->hasher->hash($node . '#' . $i);
             $this->pointToNode[$point] = $node; // lookup
             $this->nodeToPoint[$node] [] = $point; // node removal
         }
@@ -180,14 +180,14 @@ class FlexHash
      * @return array List of nodes
      * @throws \Exception when count is invalid
      */
-    public function getNodes($resource, $getCount=1): array
+    public function getNodes($resource, $getCount = 1): array
     {
-        if (!$getCount || $getCount<0) {
+        if (!$getCount || $getCount < 0) {
             throw new \Exception('Invalid count requested');
         }
 
         // handle no nodes
-        if (empty($this->pointToNode)) {
+        if ($this->nodeCount == 0) {
             return [];
         }
 
@@ -199,47 +199,35 @@ class FlexHash
         // hash resource to a point
         $resourcePoint = $this->hasher->hash($resource);
 
-        $results = [];
-
         $this->sortPointNodes();
 
-        $points = $this->sortedPoints;
-        $low = 0;
-        $high = $this->pointCount - 1;
-        $notfound = false;
-
-        // binary search of the first point greater than resource point
-        while ($high >= $low || $notfound = true) {
-            $probe = (int)floor(($high + $low) / 2);
-
-            if ($notfound === false && $points[$probe] <= $resourcePoint) {
-                $low = $probe + 1;
-            } elseif ($probe === 0 || $resourcePoint > $points[$probe - 1] || $notfound === true) {
-                if ($notfound) {
-                    // if not found is true, it means binary search failed to find any point greater
-                    // than ressource point, in this case, the last point is the bigest lower
-                    // point and first point is the next one after cycle
-                    $probe = 0;
-                }
-
-                $results[] = $this->pointToNode[$points[$probe]];
-
-                if ($getCount > 1) {
-                    for ($i = $getCount - 1; $i > 0; --$i) {
-                        if (++$probe > $this->pointCount - 1) {
-                            $probe = 0; // cycle
-                        }
-                        $results[] = $this->pointToNode[$points[$probe]];
-                    }
-                }
-
-                break;
-            } else {
-                $high = $probe - 1;
+        $point = $this->sortSearch($this->sortedPoints, $this->pointCount, $resourcePoint);
+        if ($point == $this->pointCount) $point = 0; //超出重置到第一个点
+        $result = [$this->pointToNode[$this->sortedPoints[$point]]];
+        if ($getCount > 1) {
+            for ($n = 1; $n < $getCount; $n++) {
+                if (++$point == $this->pointCount) $point = 0;
+                $result[] = $this->pointToNode[$this->sortedPoints[$point]];
             }
         }
 
-        return array_unique($results);
+        return array_unique($result);
+    }
+
+    public function sortSearch($points, $pointCount, $resourcePoint)
+    {
+        $j = $pointCount;
+        for ($i = 0; $i < $j;) {
+            $h = (int)(($i + $j) >> 1); //(int)floor(($i + $j) / 2);// avoid overflow when computing h
+            //echo '(' . $i . '+' . $j . ')/2 = ' . $h, PHP_EOL;
+            // i ≤ h < j
+            if ($points[$h] >= $resourcePoint) {
+                $j = $h; // preserves f(j) == true
+            } else {
+                $i = $h + 1; // preserves f(i-1) == false
+            }
+        }
+        return $i;
     }
 
     public function __toString(): string
@@ -265,7 +253,7 @@ class FlexHash
     {
         // sort by key (point) if not already
         if (!$this->pointToNodeSorted) {
-            ksort($this->pointToNode, SORT_REGULAR);
+            ksort($this->pointToNode, SORT_NUMERIC); //SORT_REGULAR
             $this->pointToNodeSorted = true;
             $this->sortedPoints = array_keys($this->pointToNode);
             $this->pointCount = count($this->sortedPoints);

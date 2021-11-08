@@ -43,7 +43,7 @@ class FlexHash
      * Internal map of nodes to lists of points that node is hashed to.
      * @var array { node => [ point, point, ... ], ... }
      */
-    public $nodeToPoint = [];
+    private $nodeToPoint = [];
 
     /**
      * Whether the internal map of points to nodes is already sorted.
@@ -233,13 +233,11 @@ class FlexHash
     public function __toString(): string
     {
         return sprintf(
-            '%s{nodes:[%s]}, nodeCount:%d, pointCount:%d, nodeToPoint:%s, pointToNode:%s, sortedPoints:%s',
+            '%s{nodes:[%s]}, nodeCount:%d, pointCount:%d',
             get_class($this),
             implode(',', $this->getAllNodes()),
             $this->nodeCount,
-            $this->pointCount,
-            json_encode($this->nodeToPoint),
-            json_encode($this->pointToNode)
+            $this->pointCount
         );
     }
 

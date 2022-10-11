@@ -15,60 +15,60 @@ use FlexHash\Hasher\Crc32Hasher;
 class FlexHash
 {
     /**
-     * The number of points to hash each node to.
-     *
+     * The number of positions to hash each node to.
+     * 虚拟节点数,解决节点分布不均的问题
      * @var int
      */
     private $replicas = 64;
 
     /**
      * The hash algorithm, encapsulated in a FlexHash_Hasher implementation.
-     * @var object FlexHash_Hasher
+     * @var HasherInterface FlexHash_Hasher
      */
     private $hasher;
 
     /**
      * Internal counter for current number of nodes.
-     * @var int
+     * @var int 节点数
      */
-    private $nodeCount = 0;
+    public $nodeCount = 0;
 
     /**
-     * Internal map of points (hash outputs) to nodes.
-     * @var array { point => node, ... }
+     * Internal map of positions (hash outputs) to nodes.
+     * @var array { position => node, ... } 点[hash]到节点的映射
      */
-    public $pointToNode = [];
+    private $positionToNode = [];
 
     /**
-     * Internal map of nodes to lists of points that node is hashed to.
-     * @var array { node => [ point, point, ... ], ... }
+     * Internal map of nodes to lists of positions that node is hashed to.
+     * @var array { node => [ position, position, ... ], ... }
      */
-    private $nodeToPoint = [];
+    private $nodeToPosition = [];
 
     /**
-     * Whether the internal map of points to nodes is already sorted.
+     * Whether the internal map of positions to nodes is already sorted.
      * @var bool
      */
-    private $pointToNodeSorted = false;
+    private $positionToNodeSorted = false;
 
     /**
-     * Sorted points.
+     * Sorted positions.
      *
      * @var array
      */
-    private $sortedPoints = [];
+    private $sortedPositions = [];
 
     /**
-     * Internal counter for current number of points.
+     * Internal counter for current number of positions.
      *
      * @var integer
      */
-    private $pointCount = 0;
+    private $positionCount = 0;
 
     /**
      * Constructor.
      * @param \FlexHash\Hasher\HasherInterface $hasher
-     * @param int $replicas Amount of points to hash each node to.
+     * @param int $replicas Amount of positions to hash each node to.
      */
     public function __construct(HasherInterface $hasher = null, $replicas = null)
     {
@@ -87,28 +87,30 @@ class FlexHash
      */
     public function addNode($node, $weight = 1)
     {
-        if (isset($this->nodeToPoint[$node])) {
-            throw new \Exception("Node '$node' already exists.");
+        if (isset($this->nodeToPosition[$node])) {
+            //throw new \Exception("Node '$node' already exists.");
+            return $this;
         }
 
-        $this->nodeToPoint[$node] = [];
+        $this->nodeToPosition[$node] = [];
 
-        // hash the node into multiple points
+        // hash the node into multiple positions
         for ($i = 0; $i < round($this->replicas * $weight); ++$i) {
-            $point = $this->hasher->hash($node . '#' . $i);
-            $this->pointToNode[$point] = $node; // lookup
-            $this->nodeToPoint[$node] [] = $point; // node removal
+            $position = $this->hasher->hash($node . '#' . $i);
+            $this->positionToNode[$position] = $node; // lookup
+            $this->nodeToPosition[$node] [] = $position; // node removal
         }
 
-        $this->pointToNodeSorted = false;
+        $this->positionToNodeSorted = false;
         ++$this->nodeCount;
 
+        $this->positionCount = count($this->positionToNode);
         return $this;
     }
 
     /**
      * Add a list of nodes.
-     * @param $nodes
+     * @param array $nodes
      * @param int $weight
      * @return $this
      * @throws \Exception
@@ -130,17 +132,17 @@ class FlexHash
      */
     public function removeNode($node)
     {
-        if (!isset($this->nodeToPoint[$node])) {
+        if (!isset($this->nodeToPosition[$node])) {
             throw new \Exception("Node '$node' does not exist.");
         }
 
-        foreach ($this->nodeToPoint[$node] as $point) {
-            unset($this->pointToNode[$point]);
+        foreach ($this->nodeToPosition[$node] as $position) {
+            unset($this->positionToNode[$position]);
         }
 
-        unset($this->nodeToPoint[$node]);
+        unset($this->nodeToPosition[$node]);
 
-        $this->pointToNodeSorted = false;
+        $this->positionToNodeSorted = false;
         --$this->nodeCount;
 
         return $this;
@@ -152,7 +154,7 @@ class FlexHash
      */
     public function getAllNodes(): array
     {
-        return array_keys($this->nodeToPoint);
+        return array_keys($this->nodeToPosition);
     }
 
     /**
@@ -193,68 +195,63 @@ class FlexHash
 
         // optimize single node
         if ($this->nodeCount == 1) {
-            return [current($this->pointToNode)];
+            return [current($this->positionToNode)];
         }
 
-        // hash resource to a point
-        $resourcePoint = $this->hasher->hash($resource);
+        // hash resource to a position
+        $resourcePosition = $this->hasher->hash($resource);
 
-        $this->sortPointNodes();
+        // sort by key (position) if not already 按点排序
+        if (!$this->positionToNodeSorted) {
+            //ksort($this->positionToNode, SORT_NUMERIC); //SORT_REGULAR
+            $this->positionToNodeSorted = true;
+            $this->sortedPositions = array_keys($this->positionToNode);
+            sort($this->sortedPositions, SORT_NUMERIC);
+            $this->positionCount = count($this->sortedPositions);
+        }
 
-        $point = $this->sortSearch($this->sortedPoints, $this->pointCount, $resourcePoint);
-        if ($point == $this->pointCount) $point = 0; //超出重置到第一个点
-        $result = [$this->pointToNode[$this->sortedPoints[$point]]];
+        $high = $this->positionCount-1;
+        $position = 0;
+        while($position <= $high){
+            $mid = (int)(($position + $high) >> 1); // avoid overflow when computing h
+            // $position <= $resourcePosition < $high
+            if ($this->sortedPositions[$mid] <= $resourcePosition) {
+                $position = $mid + 1;
+            } else {
+                if($this->sortedPositions[$mid-1]<=$resourcePosition){
+                    $position = $mid;
+                    break;
+                }
+                $high = $mid-1;
+            }
+            //echo $position,'-', $high, '-->',$this->sortedPositions[$mid],PHP_EOL;
+        }
+
+        if ($position == $this->positionCount) $position = 0; //超出重置到第一个点
+
+        //var_dump($this->positionCount, $position, $this->sortedPositions[$position], $resourcePosition);
+
+        $node = $this->positionToNode[$this->sortedPositions[$position]];
+        $result = [$node=>true];
         if ($getCount > 1) {
             for ($n = 1; $n < $getCount; $n++) {
-                if (++$point == $this->pointCount) $point = 0;
-                $result[] = $this->pointToNode[$this->sortedPoints[$point]];
+                if (++$position == $this->positionCount) $position = 0;
+                $node = $this->positionToNode[$this->sortedPositions[$position]];
+                $result[$node] = true;
             }
         }
 
-        return array_unique($result);
-    }
-
-    public function sortSearch($points, $pointCount, $resourcePoint)
-    {
-        $j = $pointCount;
-        for ($i = 0; $i < $j;) {
-            $h = (int)(($i + $j) >> 1); //(int)floor(($i + $j) / 2);// avoid overflow when computing h
-            //echo '(' . $i . '+' . $j . ')/2 = ' . $h, PHP_EOL;
-            // i ≤ h < j
-            if ($points[$h] >= $resourcePoint) {
-                $j = $h; // preserves f(j) == true
-            } else {
-                $i = $h + 1; // preserves f(i-1) == false
-            }
-        }
-        return $i;
+        return array_keys($result); //array_unique($result);
     }
 
     public function __toString(): string
     {
         return sprintf(
-            '%s{nodes:[%s]}, nodeCount:%d, pointCount:%d',
+            '%s{nodes:[%s]}, nodeCount:%d, positionCount:%d',
             get_class($this),
             implode(',', $this->getAllNodes()),
             $this->nodeCount,
-            $this->pointCount
+            $this->positionCount
         );
-    }
-
-    // ----------------------------------------
-    // private methods
-
-    /**
-     * Sorts the internal mapping (points to nodes) by point.
-     */
-    private function sortPointNodes()
-    {
-        // sort by key (point) if not already
-        if (!$this->pointToNodeSorted) {
-            ksort($this->pointToNode, SORT_NUMERIC); //SORT_REGULAR
-            $this->pointToNodeSorted = true;
-            $this->sortedPoints = array_keys($this->pointToNode);
-            $this->pointCount = count($this->sortedPoints);
-        }
     }
 }

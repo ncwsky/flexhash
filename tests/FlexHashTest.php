@@ -22,8 +22,9 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
     {
         $hashSpace = new FlexHash();
         $hashSpace->addNode('t-a');
-        $this->expectException('\Exception');
+        //$this->expectException('\Exception');
         $hashSpace->addNode('t-a');
+        $this->assertEquals($hashSpace->addNode('t-a'), $hashSpace);
     }
 
     public function testAddNodeAndGetAllNodes()
@@ -319,12 +320,14 @@ class FlexHashTest extends \PHPUnit\Framework\TestCase
     {
         $mockHasher = new MockHasher();
         $hashSpace = new FlexHash($mockHasher, 1);
+        $mockHasher->setHashValue(10);
         $hashSpace->addNode('t1');
+        $mockHasher->setHashValue(20);
         $hashSpace->addNode('t2');
 
         $this->assertSame(
             $hashSpace->__toString(),
-            'FlexHash\FlexHash{nodes:[t1,t2]}'
+            'FlexHash\FlexHash{nodes:[t1,t2]}, nodeCount:2, positionCount:2'
         );
     }
 }

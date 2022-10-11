@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FlexHash\Tests;
 
 use FlexHash\FlexHash;
+use FlexHash\Tests\Hasher\MockHasher;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -45,7 +46,23 @@ $hashRing->addNode("node1");
 $hashRing->addNode("node2",5);
 //$hashRing->addNode("node3");
 var_dump($hashRing->getNodes('a',1));
+echo $hashRing,PHP_EOL;
 
+$mockHasher = new MockHasher();
+$hashSpace = new FlexHash($mockHasher, 1);
+
+$mockHasher->setHashValue(10);
+$hashSpace->addNode('t1');
+
+$mockHasher->setHashValue(20);
+$hashSpace->addNode('t2');
+
+$mockHasher->setHashValue(30);
+$hashSpace->addNode('t3');
+
+$mockHasher->setHashValue(100);
+$nodes = $hashSpace->getNodes('resource', 2);
+var_dump($nodes); //['t1', 't2']
 
 $arr = [1,5,10,35,68,70,89,100,102,234,254];
 $v = $argv[1]??100;

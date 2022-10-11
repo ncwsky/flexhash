@@ -31,7 +31,7 @@ class FlexHash
      * Internal counter for current number of nodes.
      * @var int 节点数
      */
-    public $nodeCount = 0;
+    private $nodeCount = 0;
 
     /**
      * Internal map of positions (hash outputs) to nodes.
@@ -201,14 +201,7 @@ class FlexHash
         // hash resource to a position
         $resourcePosition = $this->hasher->hash($resource);
 
-        // sort by key (position) if not already 按点排序
-        if (!$this->positionToNodeSorted) {
-            //ksort($this->positionToNode, SORT_NUMERIC); //SORT_REGULAR
-            $this->positionToNodeSorted = true;
-            $this->sortedPositions = array_keys($this->positionToNode);
-            sort($this->sortedPositions, SORT_NUMERIC);
-            $this->positionCount = count($this->sortedPositions);
-        }
+        $this->sortedPositionToNode();
 
         $high = $this->positionCount-1;
         $position = 0;
@@ -218,13 +211,13 @@ class FlexHash
             if ($this->sortedPositions[$mid] <= $resourcePosition) {
                 $position = $mid + 1;
             } else {
-                if($this->sortedPositions[$mid-1]<=$resourcePosition){
+                if($mid>0 && $this->sortedPositions[$mid-1]<=$resourcePosition){
                     $position = $mid;
                     break;
                 }
                 $high = $mid-1;
             }
-            //echo $position,'-', $high, '-->',$this->sortedPositions[$mid],PHP_EOL;
+            //echo $position,'->',$mid,'<-', $high, '-->',$this->sortedPositions[$mid],PHP_EOL;
         }
 
         if ($position == $this->positionCount) $position = 0; //超出重置到第一个点
@@ -253,5 +246,22 @@ class FlexHash
             $this->nodeCount,
             $this->positionCount
         );
+    }
+
+    // sort by key (position) if not already 按点排序
+    public function sortedPositionToNode()
+    {
+        if (!$this->positionToNodeSorted) {
+            ksort($this->positionToNode, SORT_NUMERIC); //SORT_REGULAR
+            $this->positionToNodeSorted = true;
+            $this->sortedPositions = array_keys($this->positionToNode);
+            $this->positionCount = count($this->sortedPositions);
+        }
+    }
+
+    public function getSortedPositionToNode()
+    {
+        $this->sortedPositionToNode();
+        return $this->positionToNode;
     }
 }
